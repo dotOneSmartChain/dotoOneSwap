@@ -23,7 +23,9 @@ library DotOneSwapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'ab284d769569967b0880079e24c0861b2c957614c690e426bc595230ab38c0ba' // init code hash
+                // keccak256 of this build's Pair creation code. The chain-505 router
+                // was deployed with ab284d76...c0ba. Do not deploy this router against that factory.
+                hex'05a484e7048c4dd97e8e3e3f8b6b4e4e3f9e55ffe58a9b6c773b7b74899753db'
             )))));
             
     }
