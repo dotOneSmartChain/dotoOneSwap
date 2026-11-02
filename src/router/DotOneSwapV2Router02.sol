@@ -184,6 +184,8 @@ contract DotOneSwapV2Router02 is IDotOneSwapV2Router02 {
         address to,
         uint deadline
     ) public virtual override ensure(deadline) returns (uint amountETH) {
+        // Ignore any token balance already sitting on the router.
+        uint balanceBefore = IERC20(token).balanceOf(address(this));
         (, amountETH) = removeLiquidity(
             token,
             WETH,
@@ -193,7 +195,7 @@ contract DotOneSwapV2Router02 is IDotOneSwapV2Router02 {
             address(this),
             deadline
         );
-        TransferHelper.safeTransfer(token, to, IERC20(token).balanceOf(address(this)));
+        TransferHelper.safeTransfer(token, to, IERC20(token).balanceOf(address(this)).sub(balanceBefore));
         IWETH(WETH).withdraw(amountETH);
         TransferHelper.safeTransferETH(to, amountETH);
     }
@@ -399,8 +401,10 @@ contract DotOneSwapV2Router02 is IDotOneSwapV2Router02 {
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, DotOneSwapV2Library.pairFor(factory, path[0], path[1]), amountIn
         );
+        // Ignore any WETH balance already sitting on the router.
+        uint balanceBefore = IERC20(WETH).balanceOf(address(this));
         _swapSupportingFeeOnTransferTokens(path, address(this));
-        uint amountOut = IERC20(WETH).balanceOf(address(this));
+        uint amountOut = IERC20(WETH).balanceOf(address(this)).sub(balanceBefore);
         require(amountOut >= amountOutMin, 'DotOneSwapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut);
